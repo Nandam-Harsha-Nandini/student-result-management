@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In | EduMatrix Result Portal{% endblock %}
+
+{% block content %}
+<div style="max-width: 950px; margin: 1.5rem auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); border-radius: var(--radius-xl); overflow: hidden; box-shadow: var(--shadow-xl); border: 1px solid var(--border-light); background: #ffffff;">
+  
+  <!-- Left Side: Brand & Feature Showcase -->
+  <div style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 60%, #1e3a8a 100%); color: white; padding: 3rem 2.5rem; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden;">
+    <div style="position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; border-radius: 50%; background: rgba(59, 130, 246, 0.2); filter: blur(30px);"></div>
+
+    <div style="position: relative; z-index: 1;">
+      <div style="display: flex; align-items: center; gap: 0.75rem; font-size: 1.4rem; font-weight: 800; margin-bottom: 2rem;">
+        <div style="background: linear-gradient(135deg, #3b82f6, #8b5cf6); padding: 0.4rem 0.6rem; border-radius: 8px;">
+          <i class="fa-solid fa-graduation-cap"></i>
+        </div>
+        EduMatrix
+      </div>
+
+      <h2 style="font-size: 1.85rem; font-weight: 800; line-height: 1.25; margin-bottom: 1rem;">
+        Authorized Scholastic Registry & Result Portal
+      </h2>
+      <p style="color: #cbd5e1; font-size: 0.95rem; line-height: 1.6; margin-bottom: 2rem;">
+        Sign in to view your semester progress, download verified marks transcripts, or access faculty grade entry consoles.
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 1rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem; font-size: 0.9rem; color: #e2e8f0;">
+          <i class="fa-solid fa-shield-halved" style="color: #60a5fa; font-size: 1.1rem;"></i>
+          <span>Secure Role-Based Academic Authentication</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.75rem; font-size: 0.9rem; color: #e2e8f0;">
+          <i class="fa-solid fa-qrcode" style="color: #60a5fa; font-size: 1.1rem;"></i>
+          <span>Cryptographically Verifiable Digital Transcripts</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.75rem; font-size: 0.9rem; color: #e2e8f0;">
+          <i class="fa-solid fa-chart-pie" style="color: #60a5fa; font-size: 1.1rem;"></i>
+          <span>Live Class Performance & Department Metrics</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
+      Protected by Institutional Academic Data Privacy & Integrity Protocols.
+    </div>
+  </div>
+
+  <!-- Right Side: Login Form -->
+  <div style="padding: 3rem 2.5rem; display: flex; flex-direction: column; justify-content: center;">
+    <div style="margin-bottom: 1.75rem;">
+      <h3 style="font-size: 1.5rem; font-weight: 800; color: var(--text-main);">Welcome Back</h3>
+      <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 0.25rem;">
+        Select your portal and enter your credentials.
+      </p>
+    </div>
+
+    <!-- Quick 1-Click Demo Buttons -->
+    <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1.5rem;">
+      <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">
+        <i class="fa-solid fa-bolt" style="color: #f59e0b;"></i> Quick 1-Click Demo Logins
+      </div>
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="fillDemo('faculty')" style="font-size: 0.78rem;">
+          <i class="fa-solid fa-user-tie" style="color: #2563eb;"></i> Demo Faculty
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="fillDemo('student')" style="font-size: 0.78rem;">
+          <i class="fa-solid fa-user-graduate" style="color: #10b981;"></i> Demo Student
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="fillDemo('admin')" style="font-size: 0.78rem;">
+          <i class="fa-solid fa-user-shield" style="color: #8b5cf6;"></i> Demo Admin
+        </button>
+      </div>
+    </div>
+
+    <form method="post" action="{% url 'login' %}">
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label class="form-label" for="id_username">Username</label>
+        <div style="position: relative;">
+          <i class="fa-solid fa-user" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.9rem;"></i>
+          <input type="text" id="id_username" name="username" class="form-control" placeholder="Enter username" style="padding-left: 2.4rem;" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="id_password">Password</label>
+        <div style="position: relative;">
+          <i class="fa-solid fa-lock" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.9rem;"></i>
+          <input type="password" id="id_password" name="password" class="form-control" placeholder="••••••••" style="padding-left: 2.4rem;" required>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 0.5rem;" id="btn-login-submit">
+        <i class="fa-solid fa-right-to-bracket"></i> Sign In to Portal
+      </button>
+
+      <div style="text-align: center; margin-top: 1.5rem; font-size: 0.88rem; color: var(--text-muted);">
+        Don't have an institutional portal account?
+        <a href="{% url 'signup' %}" style="color: #2563eb; font-weight: 700; text-decoration: none;">Create Account</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

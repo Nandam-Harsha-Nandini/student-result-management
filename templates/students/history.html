@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}Academic History & Archives | EduMatrix{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div style="margin-bottom: 2rem;">
+  <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.02em;">
+    Academic History & Examination Archives
+  </h1>
+  <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.25rem;">
+    Access verified historical transcripts, past semester batches, and cohort grade ledgers.
+  </p>
+</div>
+
+<!-- Examination Cycle Milestones Timeline -->
+<div class="card" style="margin-bottom: 2rem; background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);">
+  <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin-bottom: 1.25rem;">
+    <i class="fa-solid fa-timeline" style="color: #2563eb; margin-right: 8px;"></i> Examination Lifecycle & Audit Trail (2025-2026)
+  </h3>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; position: relative;">
+    <div style="background: white; border-radius: var(--radius-sm); padding: 1rem; border-left: 4px solid #10b981; box-shadow: var(--shadow-sm);">
+      <div style="font-size: 0.75rem; color: #10b981; font-weight: 800;">COMPLETED</div>
+      <div style="font-weight: 700; font-size: 0.92rem; margin: 0.2rem 0;">Exam Enrollment</div>
+      <div style="font-size: 0.8rem; color: var(--text-muted);">Feb 10, 2026</div>
+    </div>
+
+    <div style="background: white; border-radius: var(--radius-sm); padding: 1rem; border-left: 4px solid #10b981; box-shadow: var(--shadow-sm);">
+      <div style="font-size: 0.75rem; color: #10b981; font-weight: 800;">COMPLETED</div>
+      <div style="font-weight: 700; font-size: 0.92rem; margin: 0.2rem 0;">Theory & Practical Exams</div>
+      <div style="font-size: 0.8rem; color: var(--text-muted);">Mar 15 - Apr 02, 2026</div>
+    </div>
+
+    <div style="background: white; border-radius: var(--radius-sm); padding: 1rem; border-left: 4px solid #2563eb; box-shadow: var(--shadow-sm);">
+      <div style="font-size: 0.75rem; color: #2563eb; font-weight: 800;">CURRENT STAGE</div>
+      <div style="font-weight: 700; font-size: 0.92rem; margin: 0.2rem 0;">Provisional Results Published</div>
+      <div style="font-size: 0.8rem; color: var(--text-muted);">Active Ledger Available</div>
+    </div>
+
+    <div style="background: white; border-radius: var(--radius-sm); padding: 1rem; border-left: 4px solid #f59e0b; box-shadow: var(--shadow-sm);">
+      <div style="font-size: 0.75rem; color: #f59e0b; font-weight: 800;">WINDOW OPEN</div>
+      <div style="font-weight: 700; font-size: 0.92rem; margin: 0.2rem 0;">Re-evaluation & Grievance</div>
+      <div style="font-size: 0.8rem; color: var(--text-muted);">Closes in 14 days</div>
+    </div>
+
+    <div style="background: white; border-radius: var(--radius-sm); padding: 1rem; border-left: 4px solid #94a3b8; box-shadow: var(--shadow-sm);">
+      <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 800;">UPCOMING</div>
+      <div style="font-weight: 700; font-size: 0.92rem; margin: 0.2rem 0;">Final Degree Transcripts</div>
+      <div style="font-size: 0.8rem; color: var(--text-muted);">Convocation 2026</div>
+    </div>
+  </div>
+</div>
+
+<!-- History Query & Filters -->
+<div class="card" style="margin-bottom: 2rem;">
+  <form method="get" action="{% url 'history' %}" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; flex: 1; min-width: 280px;">
+      <!-- Search Input -->
+      <div style="position: relative; min-width: 220px; flex: 1;">
+        <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.85rem;"></i>
+        <input 
+          type="text" 
+          name="search" 
+          value="{{ search_query }}" 
+          placeholder="Search by student or roll number..." 
+          class="form-control"
+          style="padding-left: 2.2rem; font-size: 0.9rem;"
+        >
+      </div>
+
+      <!-- Academic Year Filter -->
+      <select name="year" class="form-select" style="width: auto; min-width: 160px; font-size: 0.88rem;">
+        {% for yr in all_years %}
+          <option value="{{ yr }}" {% if selected_year == yr %}selected{% endif %}>Batch {{ yr }}</option>
+        {% endfor %}
+      </select>
+
+      <!-- Semester Filter -->
+      <select name="semester" class="form-select" style="width: auto; min-width: 140px; font-size: 0.88rem;">
+        <option value="">All Semesters</option>
+        {% for code, label in semesters %}
+          <option value="{{ code }}" {% if selected_semester == code %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div style="display: flex; gap: 0.5rem;">
+      <button type="submit" class="btn btn-secondary btn-sm">
+        <i class="fa-solid fa-filter"></i> Filter Archive
+      </button>
+      {% if search_query or selected_semester %}
+        <a href="{% url 'history' %}" class="btn btn-outline btn-sm" style="color: var(--text-muted); border-color: var(--border-light);">Reset</a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+<!-- History Data Table -->
+<div class="card">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+    <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-main);">
+      Archived Records for Batch {{ selected_year }} ({{ total_batch_count }} Records)
+    </h3>
+    <a href="{% url 'export_csv' %}" class="btn btn-secondary btn-sm">
+      <i class="fa-solid fa-download"></i> Export Archive Ledger
+    </a>
+  </div>
+
+  <div class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Roll No</th>
+          <th>Student Name</th>
+          <th>Department</th>
+          <th>Semester</th>
+          <th>Marks Total</th>
+          <th>Percentage</th>
+          <th>SGPA</th>
+          <th>Grade</th>
+          <th>Classification</th>
+          <th style="text-align: right;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in students %}
+          <tr>
+            <td><strong style="color: #2563eb; font-family: 'Outfit';">{{ s.roll_number }}</strong></td>
+            <td><strong>{{ s.name }}</strong></td>
+            <td>{{ s.department|truncatechars:24 }}</td>
+            <td>{{ s.semester }}</td>
+            <td><strong>{{ s.total|floatformat:0 }}</strong>/500</td>
+            <td>{{ s.percentage }}%</td>
+            <td><strong>{{ s.gpa }}</strong></td>
+            <td><span class="grade-badge grade-{{ s.grade|slugify }}">{{ s.grade }}</span></td>
+            <td>
+              <span class="badge {% if s.is_passed %}badge-pass{% else %}badge-fail{% endif %}">
+                {{ s.result_status }}
+              </span>
+            </td>
+            <td style="text-align: right;">
+              <a href="{% url 'transcript' s.roll_number %}" class="btn btn-secondary btn-sm" title="View Full Transcript">
+                <i class="fa-solid fa-file-invoice"></i> View Transcript
+              </a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="10" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+              No archived records match the selected year and semester criteria.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

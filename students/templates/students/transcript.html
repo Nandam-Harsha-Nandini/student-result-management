@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block title %}Official Transcript - {{ student.name }} ({{ student.roll_number }}){% endblock %}
+
+{% block content %}
+<!-- Top Toolbar (Hidden on print) -->
+<div class="no-print" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
+  <div>
+    <a href="{% url 'dashboard' %}" class="btn btn-secondary btn-sm" style="margin-bottom: 0.5rem;">
+      <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+    </a>
+    <h1 style="font-size: 1.6rem; font-weight: 800; color: var(--text-main);">
+      Official Grade Card & Transcript
+    </h1>
+  </div>
+
+  <div style="display: flex; gap: 0.75rem;">
+    <a href="{% url 'reevaluation' %}?roll={{ student.roll_number }}" class="btn btn-secondary">
+      <i class="fa-solid fa-arrows-rotate"></i> Request Re-evaluation
+    </a>
+    <button onclick="window.print()" class="btn btn-primary" id="btn-print-transcript">
+      <i class="fa-solid fa-print"></i> Print Transcript / PDF
+    </button>
+  </div>
+</div>
+
+<!-- Official Institutional Transcript Card -->
+<div class="card transcript-card" style="background: #ffffff; border: 2px solid #cbd5e1; border-radius: var(--radius-lg); padding: 3rem 2.5rem; position: relative; overflow: hidden; box-shadow: var(--shadow-xl);">
+  
+  <!-- Subtle Security Background Watermark -->
+  <div class="watermark" style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); font-size: 5rem; font-weight: 900; color: rgba(15, 23, 42, 0.03); text-transform: uppercase; letter-spacing: 0.1em; pointer-events: none; z-index: 0; white-space: nowrap;">
+    APEX UNIVERSITY OFFICIAL
+  </div>
+
+  <div style="position: relative; z-index: 1;">
+    <!-- University Header & Crest -->
+    <div style="text-align: center; border-bottom: 2px solid #0f172a; padding-bottom: 1.5rem; margin-bottom: 2rem;">
+      <div style="display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 50%; background: #0f172a; color: #fff; font-size: 2rem; margin-bottom: 0.75rem;">
+        <i class="fa-solid fa-graduation-cap"></i>
+      </div>
+      <h2 style="font-size: 1.8rem; font-weight: 800; color: #0f172a; letter-spacing: -0.02em; text-transform: uppercase;">
+        Apex Institute of Technology & Sciences
+      </h2>
+      <p style="font-size: 0.9rem; color: #475569; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">
+        Autonomous Institution &bull; Accredited Grade 'A++' by NAAC &bull; Affiliated to Central Technical University
+      </p>
+      <div style="display: inline-block; background: #0f172a; color: white; padding: 0.35rem 1.25rem; border-radius: 4px; font-weight: 700; font-size: 0.85rem; letter-spacing: 0.08em; margin-top: 0.75rem; text-transform: uppercase;">
+        Grade Sheet & Certified Examination Transcript
+      </div>
+    </div>
+
+    <!-- Student Metadata Details Grid -->
+    <div style="background: #f8fafc; border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 1.5rem; margin-bottom: 2rem;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; font-size: 0.92rem;">
+        <div>
+          <span style="color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 700; display: block;">Student Name</span>
+          <strong style="font-size: 1.1rem; color: var(--text-main);">{{ student.name }}</strong>
+        </div>
+        <div>
+          <span style="color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 700; display: block;">Roll Number / Registration No.</span>
+          <strong style="font-size: 1.1rem; color: #2563eb; font-family: 'Outfit';">{{ student.roll_number }}</strong>
+        </div>
+        <div>
+          <span style="color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 700; display: block;">Department / Program</span>
+          <strong>{{ student.department }}</strong>
+        </div>
+        <div>
+          <span style="color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 700; display: block;">Examination Cycle</span>
+          <strong>{{ student.semester }} ({{ student.academic_year }})</strong>
+        </div>
+        <div>
+          <span style="color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 700; display: block;">Cohort Rank</span>
+          <strong style="color: #10b981;">Rank #{{ rank }} of {{ total_students }} Students</strong>
+        </div>
+        <div>
+          <span style="color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 700; display: block;">Date of Publication</span>
+          <strong>October 20, 2026</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Subjects & Grades Breakdown Table -->
+    <div class="table-container" style="margin-bottom: 2rem; border-color: #94a3b8;">
+      <table class="data-table" style="border: 1px solid #cbd5e1;">
+        <thead style="background: #0f172a; color: #ffffff;">
+          <tr>
+            <th style="background: #0f172a; color: white;">Course Code</th>
+            <th style="background: #0f172a; color: white;">Course Title</th>
+            <th style="background: #0f172a; color: white; text-align: center;">Credits</th>
+            <th style="background: #0f172a; color: white; text-align: center;">Max Marks</th>
+            <th style="background: #0f172a; color: white; text-align: center;">Min Pass</th>
+            <th style="background: #0f172a; color: white; text-align: center;">Marks Secured</th>
+            <th style="background: #0f172a; color: white; text-align: center;">Grade Point</th>
+            <th style="background: #0f172a; color: white; text-align: center;">Letter Grade</th>
+            <th style="background: #0f172a; color: white; text-align: center;">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for sub in subjects %}
+            <tr>
+              <td><strong>{{ sub.code }}</strong></td>
+              <td>{{ sub.name }}</td>
+              <td style="text-align: center;">{{ sub.credits }}</td>
+              <td style="text-align: center;">100</td>
+              <td style="text-align: center;">35</td>
+              <td style="text-align: center; font-weight: 800; font-size: 1rem; color: {% if sub.passed %}#0f172a{% else %}#ef4444{% endif %};">
+                {{ sub.marks }}
+              </td>
+              <td style="text-align: center; font-weight: 700;">{{ sub.grade_point }}</td>
+              <td style="text-align: center;">
+                <span class="grade-badge grade-{{ sub.grade|slugify }}">{{ sub.grade }}</span>
+              </td>
+              <td style="text-align: center;">
+                {% if sub.passed %}
+                  <span class="badge badge-pass" style="padding: 2px 8px;">PASS</span>
+                {% else %}
+                  <span class="badge badge-fail" style="padding: 2px 8px;">FAIL</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Aggregate Performance Summary Box -->
+    <div style="background: #f8fafc; border: 2px solid #0f172a; border-radius: var(--radius-sm); padding: 1.5rem; margin-bottom: 2.5rem;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; text-align: center;">
+        <div style="border-right: 1px solid #cbd5e1;">
+          <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Grand Total</div>
+          <div style="font-size: 1.6rem; font-weight: 800; color: #0f172a; font-family: 'Outfit';">{{ student.total }} <span style="font-size: 0.9rem; color: #94a3b8;">/ 500</span></div>
+        </div>
+
+        <div style="border-right: 1px solid #cbd5e1;">
+          <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Aggregate Percentage</div>
+          <div style="font-size: 1.6rem; font-weight: 800; color: #0f172a; font-family: 'Outfit';">{{ student.percentage }}%</div>
+        </div>
+
+        <div style="border-right: 1px solid #cbd5e1;">
+          <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Semester GPA (SGPA)</div>
+          <div style="font-size: 1.6rem; font-weight: 800; color: #2563eb; font-family: 'Outfit';">{{ student.gpa }} <span style="font-size: 0.8rem; color: #64748b;">/ 10.0</span></div>
+        </div>
+
+        <div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Final Classification</div>
+          <div style="font-size: 1.15rem; font-weight: 800; color: {% if student.is_passed %}#059669{% else %}#dc2626{% endif %}; margin-top: 0.35rem;">
+            {{ student.division|upper }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Official Validation, Seal, Signatures -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; padding-top: 1.5rem; flex-wrap: wrap; gap: 2rem;">
+      <!-- Institutional Security QR Verification -->
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <div style="width: 80px; height: 80px; border: 2px solid #0f172a; border-radius: 8px; padding: 4px; display: flex; align-items: center; justify-content: center; background: white;">
+          <!-- SVG QR Code simulation -->
+          <svg width="68" height="68" viewBox="0 0 100 100" fill="#0f172a">
+            <rect x="0" y="0" width="30" height="30" />
+            <rect x="5" y="5" width="20" height="20" fill="#fff" />
+            <rect x="10" y="10" width="10" height="10" />
+            <rect x="70" y="0" width="30" height="30" />
+            <rect x="75" y="5" width="20" height="20" fill="#fff" />
+            <rect x="80" y="10" width="10" height="10" />
+            <rect x="0" y="70" width="30" height="30" />
+            <rect x="5" y="75" width="20" height="20" fill="#fff" />
+            <rect x="10" y="80" width="10" height="10" />
+            <rect x="40" y="10" width="10" height="20" />
+            <rect x="40" y="40" width="20" height="20" />
+            <rect x="70" y="40" width="10" height="10" />
+            <rect x="70" y="70" width="20" height="20" />
+            <rect x="40" y="70" width="10" height="20" />
+          </svg>
+        </div>
+        <div>
+          <div style="font-size: 0.75rem; font-weight: 700; color: #475569; text-transform: uppercase;">Digital Verification</div>
+          <div style="font-size: 0.8rem; font-family: monospace; color: #0f172a;">TXN-{{ student.roll_number }}-2026</div>
+          <div style="font-size: 0.72rem; color: #10b981; font-weight: 600;">
+            <i class="fa-solid fa-circle-check"></i> Cryptographically Signed
+          </div>
+        </div>
+      </div>
+
+      <!-- Institutional Signatures -->
+      <div style="display: flex; gap: 3rem; text-align: center;">
+        <div>
+          <div style="width: 140px; height: 40px; margin: 0 auto; border-bottom: 1px dashed #64748b; display: flex; align-items: flex-end; justify-content: center; font-family: 'Brush Script MT', cursive; font-size: 1.4rem; color: #1e3a8a;">
+            R. Sharma
+          </div>
+          <div style="font-size: 0.8rem; font-weight: 700; color: #0f172a; margin-top: 0.35rem;">Dean of Academic Affairs</div>
+        </div>
+
+        <div>
+          <div style="width: 140px; height: 40px; margin: 0 auto; border-bottom: 1px dashed #64748b; display: flex; align-items: flex-end; justify-content: center; font-family: 'Brush Script MT', cursive; font-size: 1.4rem; color: #1e3a8a;">
+            A. K. Sen
+          </div>
+          <div style="font-size: 0.8rem; font-weight: 700; color: #0f172a; margin-top: 0.35rem;">Controller of Examinations</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

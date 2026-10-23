@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block title %}CGPA & GPA Calculator | EduMatrix{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div style="margin-bottom: 2rem;">
+  <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.02em;">
+    Academic GPA / CGPA Calculator & Simulator
+  </h1>
+  <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.25rem;">
+    Compute Semester Grade Point Average (SGPA) and simulate target grades for upcoming academic terms.
+  </p>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
+  
+  <!-- Interactive SGPA Calculator -->
+  <div class="card" style="grid-column: span 2;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+      <div>
+        <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-main);">
+          Semester SGPA Calculator (10-Point System)
+        </h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">Enter course credits and obtained marks or select grade</p>
+      </div>
+      <button type="button" class="btn btn-secondary btn-sm" id="btnAddCourse">
+        <i class="fa-solid fa-plus"></i> Add Course
+      </button>
+    </div>
+
+    <div class="table-container" style="margin-bottom: 1.5rem;">
+      <table class="data-table" id="calculatorTable">
+        <thead>
+          <tr>
+            <th>Course Title</th>
+            <th style="width: 120px; text-align: center;">Credits</th>
+            <th style="width: 140px; text-align: center;">Marks (0-100)</th>
+            <th style="width: 120px; text-align: center;">Grade Point</th>
+            <th style="width: 100px; text-align: center;">Grade</th>
+            <th style="width: 60px; text-align: center;">Action</th>
+          </tr>
+        </thead>
+        <tbody id="courseRows">
+          <!-- Default Row 1 -->
+          <tr class="calc-row">
+            <td><input type="text" class="form-control" value="Python Programming (CS401)" style="font-size:0.88rem;"></td>
+            <td><input type="number" class="form-control credit-input" value="4" min="1" max="10" style="text-align:center;"></td>
+            <td><input type="number" class="form-control marks-input" value="88" min="0" max="100" style="text-align:center;"></td>
+            <td style="text-align: center; font-weight: 800; color: #2563eb;" class="gp-display">9.0</td>
+            <td style="text-align: center;"><span class="grade-badge grade-A letter-display">A</span></td>
+            <td style="text-align: center;"><button type="button" class="btn btn-secondary btn-sm remove-row" style="padding:4px 8px; color:#ef4444;"><i class="fa-solid fa-xmark"></i></button></td>
+          </tr>
+          <!-- Default Row 2 -->
+          <tr class="calc-row">
+            <td><input type="text" class="form-control" value="Java Architecture (CS402)" style="font-size:0.88rem;"></td>
+            <td><input type="number" class="form-control credit-input" value="4" min="1" max="10" style="text-align:center;"></td>
+            <td><input type="number" class="form-control marks-input" value="82" min="0" max="100" style="text-align:center;"></td>
+            <td style="text-align: center; font-weight: 800; color: #2563eb;" class="gp-display">9.0</td>
+            <td style="text-align: center;"><span class="grade-badge grade-A letter-display">A</span></td>
+            <td style="text-align: center;"><button type="button" class="btn btn-secondary btn-sm remove-row" style="padding:4px 8px; color:#ef4444;"><i class="fa-solid fa-xmark"></i></button></td>
+          </tr>
+          <!-- Default Row 3 -->
+          <tr class="calc-row">
+            <td><input type="text" class="form-control" value="Database Systems (CS403)" style="font-size:0.88rem;"></td>
+            <td><input type="number" class="form-control credit-input" value="3" min="1" max="10" style="text-align:center;"></td>
+            <td><input type="number" class="form-control marks-input" value="92" min="0" max="100" style="text-align:center;"></td>
+            <td style="text-align: center; font-weight: 800; color: #2563eb;" class="gp-display">10.0</td>
+            <td style="text-align: center;"><span class="grade-badge grade-A-plus letter-display">A+</span></td>
+            <td style="text-align: center;"><button type="button" class="btn btn-secondary btn-sm remove-row" style="padding:4px 8px; color:#ef4444;"><i class="fa-solid fa-xmark"></i></button></td>
+          </tr>
+          <!-- Default Row 4 -->
+          <tr class="calc-row">
+            <td><input type="text" class="form-control" value="Discrete Mathematics (MA404)" style="font-size:0.88rem;"></td>
+            <td><input type="number" class="form-control credit-input" value="4" min="1" max="10" style="text-align:center;"></td>
+            <td><input type="number" class="form-control marks-input" value="78" min="0" max="100" style="text-align:center;"></td>
+            <td style="text-align: center; font-weight: 800; color: #2563eb;" class="gp-display">8.0</td>
+            <td style="text-align: center;"><span class="grade-badge grade-B-plus letter-display">B+</span></td>
+            <td style="text-align: center;"><button type="button" class="btn btn-secondary btn-sm remove-row" style="padding:4px 8px; color:#ef4444;"><i class="fa-solid fa-xmark"></i></button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Live Calculated Score Banner -->
+    <div style="background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%); border: 1px solid #bfdbfe; border-radius: var(--radius-md); padding: 1.5rem; display: flex; justify-content: space-around; align-items: center; text-align: center; flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <div style="font-size: 0.8rem; color: #1e40af; font-weight: 700; text-transform: uppercase;">Total Credits</div>
+        <div style="font-size: 1.8rem; font-weight: 800; color: #1e3a8a; font-family: 'Outfit';" id="totalCredits">15</div>
+      </div>
+      <div>
+        <div style="font-size: 0.8rem; color: #1e40af; font-weight: 700; text-transform: uppercase;">Total Quality Points</div>
+        <div style="font-size: 1.8rem; font-weight: 800; color: #1e3a8a; font-family: 'Outfit';" id="totalQualityPoints">134.0</div>
+      </div>
+      <div>
+        <div style="font-size: 0.8rem; color: #1e40af; font-weight: 700; text-transform: uppercase;">Calculated SGPA</div>
+        <div style="font-size: 2.2rem; font-weight: 800; color: #2563eb; font-family: 'Outfit';" id="calculatedSGPA">8.93</div>
+      </div>
+      <div>
+        <div style="font-size: 0.8rem; color: #1e40af; font-weight: 700; text-transform: uppercase;">Classification</div>
+        <div style="font-size: 1.15rem; font-weight: 800; color: #059669; margin-top: 0.25rem;" id="calculatedClass">FIRST CLASS WITH DISTINCTION</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Target CGPA Goal Forecaster -->
+  <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+    <div>
+      <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem;">
+        <i class="fa-solid fa-bullseye" style="color: #2563eb; margin-right: 6px;"></i> Target CGPA Simulator
+      </h3>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+        Find out what SGPA you need in subsequent semesters to graduate with your target honors.
+      </p>
+
+      <div class="form-group">
+        <label class="form-label">Current Completed Semesters</label>
+        <input type="number" id="simCompletedSem" class="form-control" value="3" min="1" max="7">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Current Cumulative CGPA</label>
+        <input type="number" step="0.01" id="simCurrentCGPA" class="form-control" value="7.80" min="0" max="10">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Desired Target Graduation CGPA</label>
+        <input type="number" step="0.01" id="simTargetCGPA" class="form-control" value="8.50" min="0" max="10">
+      </div>
+
+      <button type="button" class="btn btn-primary" id="btnRunSimulator" style="width: 100%; margin-top: 0.5rem;">
+        Calculate Target SGPA
+      </button>
+    </div>
+
+    <!-- Simulator Result Container -->
+    <div id="simResultBox" style="margin-top: 1.5rem; background: #f8fafc; border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 1.25rem; text-align: center;">
+      <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700;">REQUIRED AVERAGE IN REMAINING TERMS</div>
+      <div style="font-size: 1.8rem; font-weight: 800; color: #2563eb; font-family: 'Outfit'; margin: 0.25rem 0;" id="simRequiredSGPA">
+        8.92
+      </div>
+      <div style="font-size: 0.82rem; color: #475569;" id="simMessage">
+        Achievable! Aim for minimum 8.92 SGPA across remaining 5 semesters.
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const courseRows = document.getElementById("courseRows");
+  const btnAddCourse = document.getElementById("btnAddCourse");
+
+  function getGradeInfo(marks) {
+    if (marks >= 90) return { grade: "A+", gp: 10.0, class: "grade-A-plus" };
+    if (marks >= 80) return { grade: "A", gp: 9.0, class: "grade-A" };
+    if (marks >= 70) return { grade: "B+", gp: 8.0, class: "grade-B-plus" };
+    if (marks >= 60) return { grade: "B", gp: 7.0, class: "grade-B" };
+    if (marks >= 50) return { grade: "C", gp: 6.0, class: "grade-C" };
+    if (marks >= 35) return { grade: "D", gp: 5.0, class: "grade-D" };
+    return { grade: "F", gp: 0.0, class: "grade-F" };
+  }
+
+  function recalculateSGPA() {
+    let totalCredits = 0;
+    let totalQP = 0;
+    let allPassed = true;
+
+    document.querySelectorAll(".calc-row").forEach(row => {
+      const creditInp = row.querySelector(".credit-input");
+      const marksInp = row.querySelector(".marks-input");
+      const gpDisp = row.querySelector(".gp-display");
+      const letterDisp = row.querySelector(".letter-display");
+
+      const credits = parseFloat(creditInp.value) || 0;
+      const marks = parseFloat(marksInp.value) || 0;
+
+      const info = getGradeInfo(marks);
+      if (marks < 35) allPassed = false;
+
+      gpDisp.textContent = info.gp.toFixed(1);
+      letterDisp.textContent = info.grade;
+      letterDisp.className = `grade-badge ${info.class} letter-display`;
+
+      totalCredits += credits;
+      totalQP += (credits * info.gp);
+    });
+
+    const sgpa = totalCredits > 0 ? (totalQP / totalCredits) : 0;
+
+    document.getElementById("totalCredits").textContent = totalCredits;
+    document.getElementById("totalQualityPoints").textContent = totalQP.toFixed(1);
+    document.getElementById("calculatedSGPA").textContent = sgpa.toFixed(2);
+
+    const classDisp = document.getElementById("calculatedClass");
+    if (!allPassed) {
+      classDisp.textContent = "ARREAR / BACKLOG";
+      classDisp.style.color = "#dc2626";
+    } else if (sgpa >= 8.5) {
+      classDisp.textContent = "FIRST CLASS WITH DISTINCTION";
+      classDisp.style.color = "#059669";
+    } else if (sgpa >= 7.0) {
+      classDisp.textContent = "FIRST CLASS";
+      classDisp.style.color = "#2563eb";
+    } else if (sgpa >= 6.0) {
+      classDisp.textContent = "SECOND CLASS";
+      classDisp.style.color = "#4f46e5";
+    } else {
+      classDisp.textContent = "PASS CLASS";
+      classDisp.style.color = "#d97706";
+    }
+  }
+
+  // Row removal
+  courseRows.addEventListener("click", (e) => {
+    if (e.target.closest(".remove-row")) {
+      const rows = document.querySelectorAll(".calc-row");
+      if (rows.length > 1) {
+        e.target.closest(".calc-row").remove();
+        recalculateSGPA();
+      } else {
+        alert("You must keep at least 1 course row.");
+      }
+    }
+  });
+
+  // Dynamic inputs
+  courseRows.addEventListener("input", recalculateSGPA);
+
+  // Add course row
+  btnAddCourse.addEventListener("click", () => {
+    const row = document.createElement("tr");
+    row.className = "calc-row";
+    row.innerHTML = `
+      <td><input type="text" class="form-control" value="Elective Course" style="font-size:0.88rem;"></td>
+      <td><input type="number" class="form-control credit-input" value="3" min="1" max="10" style="text-align:center;"></td>
+      <td><input type="number" class="form-control marks-input" value="75" min="0" max="100" style="text-align:center;"></td>
+      <td style="text-align: center; font-weight: 800; color: #2563eb;" class="gp-display">8.0</td>
+      <td style="text-align: center;"><span class="grade-badge grade-B-plus letter-display">B+</span></td>
+      <td style="text-align: center;"><button type="button" class="btn btn-secondary btn-sm remove-row" style="padding:4px 8px; color:#ef4444;"><i class="fa-solid fa-xmark"></i></button></td>
+    `;
+    courseRows.appendChild(row);
+    recalculateSGPA();
+  });
+
+  // Target Simulator
+  document.getElementById("btnRunSimulator").addEventListener("click", () => {
+    const completed = parseInt(document.getElementById("simCompletedSem").value) || 1;
+    const currentCGPA = parseFloat(document.getElementById("simCurrentCGPA").value) || 0;
+    const targetCGPA = parseFloat(document.getElementById("simTargetCGPA").value) || 0;
+    const totalSems = 8;
+    const remaining = totalSems - completed;
+
+    if (remaining <= 0) {
+      document.getElementById("simRequiredSGPA").textContent = "N/A";
+      document.getElementById("simMessage").textContent = "All 8 semesters completed.";
+      return;
+    }
+
+    const currentPoints = completed * currentCGPA;
+    const targetPoints = totalSems * targetCGPA;
+    const requiredPoints = targetPoints - currentPoints;
+    const requiredSGPA = requiredPoints / remaining;
+
+    const reqDisplay = document.getElementById("simRequiredSGPA");
+    const msgDisplay = document.getElementById("simMessage");
+
+    reqDisplay.textContent = requiredSGPA.toFixed(2);
+
+    if (requiredSGPA > 10.0) {
+      reqDisplay.style.color = "#dc2626";
+      msgDisplay.textContent = "Mathematically impossible (requires > 10.0 SGPA). Adjust target CGPA.";
+    } else if (requiredSGPA <= 0) {
+      reqDisplay.style.color = "#059669";
+      msgDisplay.textContent = "Target already secured! Maintain passing marks to graduate with honors.";
+    } else {
+      reqDisplay.style.color = "#2563eb";
+      msgDisplay.textContent = `Achievable! Aim for an average of ${requiredSGPA.toFixed(2)} SGPA over the next ${remaining} semesters.`;
+    }
+  });
+
+  recalculateSGPA();
+});
+</script>
+{% endblock %}

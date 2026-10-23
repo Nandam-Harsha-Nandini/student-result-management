@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Paper Re-evaluation Portal | EduMatrix{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div style="margin-bottom: 2rem;">
+  <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.02em;">
+    Paper Re-evaluation & Score Review Portal
+  </h1>
+  <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.25rem;">
+    Submit application for script retotaling, verification of unanswered questions, and transparent grievance redressal.
+  </p>
+</div>
+
+<!-- Guidelines Alert Box -->
+<div class="card" style="margin-bottom: 2rem; background: #fffbeb; border: 1px solid #fde68a;">
+  <div style="display: flex; gap: 1rem; align-items: flex-start;">
+    <div style="font-size: 1.5rem; color: #b45309;"><i class="fa-solid fa-circle-exclamation"></i></div>
+    <div>
+      <h3 style="font-size: 1.05rem; font-weight: 800; color: #92400e; margin-bottom: 0.25rem;">
+        Re-evaluation Policy & Instructions (Regulation 14.2)
+      </h3>
+      <p style="font-size: 0.88rem; color: #78350f; line-height: 1.5;">
+        Students can apply for re-evaluation within 15 calendar days of provisional result publication. In case of grade change, the updated score is automatically updated in the ledger and a fresh transcript is generated.
+      </p>
+    </div>
+  </div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
+  
+  <!-- Submit Re-evaluation Form -->
+  <div class="card">
+    <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-main); margin-bottom: 1.25rem;">
+      <i class="fa-solid fa-file-signature" style="color: #2563eb; margin-right: 8px;"></i>
+      Submit Review Request
+    </h3>
+
+    <form method="post" action="{% url 'reevaluation' %}">
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label class="form-label">Student Name *</label>
+        <input type="text" name="student_name" class="form-control" placeholder="Full name as in marksheet" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Student Roll Number *</label>
+        <input type="text" name="roll_number" class="form-control" value="{{ request.GET.roll }}" placeholder="e.g. 2024CS04" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Subject for Re-evaluation *</label>
+        <select name="subject" class="form-select" required>
+          <option value="">Select Examination Course...</option>
+          <option value="Python Programming (CS401)">Python Programming (CS401)</option>
+          <option value="Java Architecture (CS402)">Java Architecture (CS402)</option>
+          <option value="Database Systems (CS403)">Database Systems (CS403)</option>
+          <option value="Discrete Mathematics (MA404)">Discrete Mathematics (MA404)</option>
+          <option value="Technical English (HS405)">Technical English (HS405)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Current Marks in Subject *</label>
+        <input type="number" step="0.5" min="0" max="100" name="current_marks" class="form-control" placeholder="Current score on transcript" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Reason / Specific Questions for Review *</label>
+        <textarea name="reason" rows="3" class="form-control" placeholder="Specify question numbers, retotaling error, or practical assessment discrepancies..." required></textarea>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
+        <i class="fa-solid fa-paper-plane"></i> Submit Grievance Application
+      </button>
+    </form>
+  </div>
+
+  <!-- Re-evaluation Request Status Tracker -->
+  <div class="card" style="grid-column: span 1;">
+    <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-main); margin-bottom: 1.25rem;">
+      <i class="fa-solid fa-list-check" style="color: #2563eb; margin-right: 8px;"></i>
+      Application Status Tracker
+    </h3>
+
+    <div style="display: flex; flex-direction: column; gap: 1rem; max-height: 520px; overflow-y: auto;">
+      {% for req in requests %}
+        <div style="padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light); background: #f8fafc;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.4rem;">
+            <div>
+              <span style="font-size: 0.75rem; color: var(--text-muted); font-family: monospace;">#REV-{{ req.id|stringformat:"04d" }}</span>
+              <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin: 2px 0;">
+                {{ req.student_name }} ({{ req.roll_number }})
+              </h4>
+            </div>
+            <span class="badge {% if req.status == 'Approved' %}badge-pass{% elif req.status == 'In Review' %}badge-distinction{% elif req.status == 'Rejected' %}badge-fail{% else %}badge-pending{% endif %}">
+              {{ req.status }}
+            </span>
+          </div>
+
+          <div style="font-size: 0.85rem; color: #1e3a8a; font-weight: 600; margin-bottom: 0.25rem;">
+            {{ req.subject }} &bull; Current: {{ req.current_marks }} / 100
+          </div>
+
+          <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 0.5rem;">
+            &ldquo;{{ req.reason|truncatechars:110 }}&rdquo;
+          </p>
+
+          <div style="font-size: 0.75rem; color: var(--text-light);">
+            Submitted: {{ req.submitted_at|date:"M d, Y, h:i A" }}
+          </div>
+        </div>
+      {% empty %}
+        <p style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 2rem 0;">
+          No re-evaluation requests submitted yet.
+        </p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

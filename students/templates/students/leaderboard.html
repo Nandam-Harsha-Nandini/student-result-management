@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}Merit List & Leaderboard | EduMatrix{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div style="text-align: center; max-width: 750px; margin: 0 auto 2.5rem;">
+  <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: #fffbeb; border: 1px solid #fde68a; padding: 0.35rem 0.9rem; border-radius: 9999px; font-size: 0.82rem; font-weight: 700; color: #b45309; margin-bottom: 0.75rem;">
+    <i class="fa-solid fa-crown"></i> ACADEMIC YEAR 2025-2026 HONORS LIST
+  </div>
+  <h1 style="font-size: 2.2rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.02em;">
+    Scholastic Merit List & Top Rankers
+  </h1>
+  <p style="color: var(--text-muted); font-size: 1rem; margin-top: 0.5rem; line-height: 1.6;">
+    Recognizing exceptional academic brilliance, highest cumulative marks, and departmental distinction.
+  </p>
+</div>
+
+<!-- Top 3 Podium Showcase -->
+{% if top_3 %}
+<div style="display: flex; justify-content: center; align-items: flex-end; gap: 1.5rem; margin-bottom: 3.5rem; flex-wrap: wrap;">
+  
+  <!-- Rank 2: Silver (Appears left on desktop podium) -->
+  {% if top_3|length >= 2 %}
+    {% with s=top_3.1 %}
+      <div class="card" style="flex: 1; min-width: 260px; max-width: 320px; text-align: center; border-top: 5px solid #94a3b8; padding-top: 2rem; position: relative; box-shadow: var(--shadow-md);">
+        <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #94a3b8, #64748b); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; font-weight: 800; margin: 0 auto 1rem; box-shadow: 0 6px 16px rgba(100, 116, 139, 0.35);">
+          <i class="fa-solid fa-medal"></i>
+        </div>
+        <span class="badge" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; font-weight: 800;">
+          RANK #2 &bull; SILVER
+        </span>
+        <h3 style="font-size: 1.25rem; font-weight: 800; margin: 0.75rem 0 0.25rem; color: var(--text-main);">{{ s.name }}</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+          Roll: {{ s.roll_number }} &bull; {{ s.department|truncatechars:22 }}
+        </p>
+        <div style="background: #f8fafc; border-radius: var(--radius-sm); padding: 0.75rem; margin-bottom: 1rem;">
+          <div style="font-size: 1.6rem; font-weight: 800; color: #0f172a; font-family: 'Outfit';">{{ s.percentage }}%</div>
+          <div style="font-size: 0.8rem; color: #64748b; font-weight: 600;">SGPA: {{ s.gpa }} / 10.0 &bull; Total: {{ s.total }}</div>
+        </div>
+        <a href="{% url 'transcript' s.roll_number %}" class="btn btn-secondary btn-sm" style="width: 100%;">
+          View Transcript
+        </a>
+      </div>
+    {% endwith %}
+  {% endif %}
+
+  <!-- Rank 1: Gold (Center & Taller) -->
+  {% if top_3|length >= 1 %}
+    {% with s=top_3.0 %}
+      <div class="card" style="flex: 1.1; min-width: 280px; max-width: 360px; text-align: center; border-top: 6px solid #f59e0b; padding: 2.5rem 1.75rem; position: relative; box-shadow: var(--shadow-xl); transform: translateY(-10px); background: #ffffff;">
+        <div style="position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: #f59e0b; color: white; padding: 0.25rem 0.8rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 4px;">
+          <i class="fa-solid fa-crown"></i> University Topper
+        </div>
+
+        <div style="width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 800; margin: 0 auto 1.25rem; box-shadow: 0 8px 24px rgba(245, 158, 11, 0.45);">
+          <i class="fa-solid fa-trophy"></i>
+        </div>
+
+        <span class="badge" style="background: #fffbeb; color: #b45309; border: 1px solid #fde68a; font-weight: 800;">
+          RANK #1 &bull; GOLD MEDALIST
+        </span>
+        <h3 style="font-size: 1.45rem; font-weight: 800; margin: 0.75rem 0 0.25rem; color: var(--text-main);">{{ s.name }}</h3>
+        <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1rem;">
+          Roll: {{ s.roll_number }} &bull; {{ s.department }}
+        </p>
+
+        <div style="background: #fffbeb; border: 1px solid #fef3c7; border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1.25rem;">
+          <div style="font-size: 2rem; font-weight: 800; color: #b45309; font-family: 'Outfit';">{{ s.percentage }}%</div>
+          <div style="font-size: 0.85rem; color: #92400e; font-weight: 700;">SGPA: {{ s.gpa }} / 10.0 &bull; Total: {{ s.total }} / 500</div>
+        </div>
+
+        <a href="{% url 'transcript' s.roll_number %}" class="btn btn-primary" style="width: 100%;">
+          <i class="fa-solid fa-file-invoice"></i> Official Transcript
+        </a>
+      </div>
+    {% endwith %}
+  {% endif %}
+
+  <!-- Rank 3: Bronze (Appears right on desktop podium) -->
+  {% if top_3|length >= 3 %}
+    {% with s=top_3.2 %}
+      <div class="card" style="flex: 1; min-width: 260px; max-width: 320px; text-align: center; border-top: 5px solid #ea580c; padding-top: 2rem; position: relative; box-shadow: var(--shadow-md);">
+        <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #ea580c, #c2410c); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; font-weight: 800; margin: 0 auto 1rem; box-shadow: 0 6px 16px rgba(234, 88, 12, 0.35);">
+          <i class="fa-solid fa-award"></i>
+        </div>
+        <span class="badge" style="background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; font-weight: 800;">
+          RANK #3 &bull; BRONZE
+        </span>
+        <h3 style="font-size: 1.25rem; font-weight: 800; margin: 0.75rem 0 0.25rem; color: var(--text-main);">{{ s.name }}</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+          Roll: {{ s.roll_number }} &bull; {{ s.department|truncatechars:22 }}
+        </p>
+        <div style="background: #f8fafc; border-radius: var(--radius-sm); padding: 0.75rem; margin-bottom: 1rem;">
+          <div style="font-size: 1.6rem; font-weight: 800; color: #0f172a; font-family: 'Outfit';">{{ s.percentage }}%</div>
+          <div style="font-size: 0.8rem; color: #64748b; font-weight: 600;">SGPA: {{ s.gpa }} / 10.0 &bull; Total: {{ s.total }}</div>
+        </div>
+        <a href="{% url 'transcript' s.roll_number %}" class="btn btn-secondary btn-sm" style="width: 100%;">
+          View Transcript
+        </a>
+      </div>
+    {% endwith %}
+  {% endif %}
+</div>
+{% endif %}
+
+<!-- Full Merit Ranking Table -->
+<div class="card">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+    <div>
+      <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--text-main);">Institutional Merit Standing (Top 100)</h3>
+      <p style="font-size: 0.85rem; color: var(--text-muted);">Ranked comprehensively by Aggregate Total Marks and SGPA</p>
+    </div>
+    <a href="{% url 'export_csv' %}" class="btn btn-secondary btn-sm">
+      <i class="fa-solid fa-file-arrow-down"></i> Export Full Merit List
+    </a>
+  </div>
+
+  <div class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th style="width: 80px; text-align: center;">Rank</th>
+          <th>Student Details</th>
+          <th>Department</th>
+          <th>Semester</th>
+          <th>Total Marks</th>
+          <th>Percentage</th>
+          <th>SGPA</th>
+          <th>Letter Grade</th>
+          <th>Scholastic Honor</th>
+          <th style="text-align: right;">Transcript</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in top_3 %}
+          <tr style="background: rgba(254, 243, 199, 0.2);">
+            <td style="text-align: center;">
+              <span style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background: {% if forloop.counter == 1 %}#f59e0b{% elif forloop.counter == 2 %}#94a3b8{% else %}#ea580c{% endif %}; color: white; font-weight: 800; font-size: 0.85rem;">
+                #{{ forloop.counter }}
+              </span>
+            </td>
+            <td>
+              <div class="student-meta">
+                <div class="student-avatar" style="background: {% if forloop.counter == 1 %}linear-gradient(135deg, #f59e0b, #d97706){% elif forloop.counter == 2 %}linear-gradient(135deg, #94a3b8, #64748b){% else %}linear-gradient(135deg, #ea580c, #c2410c){% endif %};">{{ s.name|slice:":1"|upper }}</div>
+                <div class="student-details">
+                  <h5>{{ s.name }}</h5>
+                  <span>{{ s.roll_number }}</span>
+                </div>
+              </div>
+            </td>
+            <td>{{ s.department }}</td>
+            <td>{{ s.semester }}</td>
+            <td><strong>{{ s.total }}</strong> / 500</td>
+            <td><strong>{{ s.percentage }}%</strong></td>
+            <td><strong style="color: #2563eb;">{{ s.gpa }}</strong></td>
+            <td><span class="grade-badge grade-{{ s.grade|slugify }}">{{ s.grade }}</span></td>
+            <td>
+              <span class="badge badge-distinction">
+                {% if forloop.counter == 1 %}Summa Cum Laude{% elif forloop.counter == 2 %}Magna Cum Laude{% else %}Cum Laude{% endif %}
+              </span>
+            </td>
+            <td style="text-align: right;">
+              <a href="{% url 'transcript' s.roll_number %}" class="btn btn-secondary btn-sm">
+                <i class="fa-solid fa-file-invoice"></i> Marksheet
+              </a>
+            </td>
+          </tr>
+        {% endfor %}
+
+        {% for s in remaining %}
+          <tr>
+            <td style="text-align: center; font-weight: 700; color: #64748b;">
+              #{{ forloop.counter|add:3 }}
+            </td>
+            <td>
+              <div class="student-meta">
+                <div class="student-avatar">{{ s.name|slice:":1"|upper }}</div>
+                <div class="student-details">
+                  <h5>{{ s.name }}</h5>
+                  <span>{{ s.roll_number }}</span>
+                </div>
+              </div>
+            </td>
+            <td>{{ s.department }}</td>
+            <td>{{ s.semester }}</td>
+            <td><strong>{{ s.total }}</strong> / 500</td>
+            <td>{{ s.percentage }}%</td>
+            <td><strong style="color: #2563eb;">{{ s.gpa }}</strong></td>
+            <td><span class="grade-badge grade-{{ s.grade|slugify }}">{{ s.grade }}</span></td>
+            <td>
+              <span class="badge {% if s.percentage >= 75 %}badge-distinction{% elif s.is_passed %}badge-pass{% else %}badge-fail{% endif %}">
+                {{ s.division }}
+              </span>
+            </td>
+            <td style="text-align: right;">
+              <a href="{% url 'transcript' s.roll_number %}" class="btn btn-secondary btn-sm">
+                <i class="fa-solid fa-file-invoice"></i> Marksheet
+              </a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

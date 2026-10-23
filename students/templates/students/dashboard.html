@@ -1,0 +1,458 @@
+{% extends "base.html" %}
+
+{% block title %}Academic Dashboard | EduMatrix Result Portal{% endblock %}
+
+{% block content %}
+<!-- Top Header & Action Bar -->
+<div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1.25rem; margin-bottom: 2rem;">
+  <div>
+    <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.02em;">
+      Scholastic Analytics & Results Dashboard
+    </h1>
+    <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.25rem;">
+      Real-time academic evaluation, subject benchmark analytics, and student grade administration.
+    </p>
+  </div>
+
+  <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+    <a href="{% url 'export_csv' %}" class="btn btn-secondary" id="btn-export-csv">
+      <i class="fa-solid fa-file-arrow-down"></i> Export CSV
+    </a>
+    <button onclick="openModal('addStudentModal')" class="btn btn-primary" id="btn-add-student">
+      <i class="fa-solid fa-plus"></i> Add Student Result
+    </button>
+  </div>
+</div>
+
+<!-- Personal Student Card (If logged in as student) -->
+{% if student_record %}
+<div class="card" style="background: linear-gradient(135deg, #1e1b4b 0%, #1e3a8a 100%); color: white; border: none; margin-bottom: 2rem; box-shadow: var(--shadow-lg);">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;">
+    <div>
+      <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.15); padding: 0.3rem 0.75rem; border-radius: 9999px; font-size: 0.8rem; font-weight: 700; margin-bottom: 0.75rem;">
+        <i class="fa-solid fa-id-badge"></i> YOUR ACADEMIC PROFILE
+      </div>
+      <h2 style="font-size: 1.6rem; font-weight: 800; margin-bottom: 0.25rem;">{{ student_record.name }}</h2>
+      <div style="color: #cbd5e1; font-size: 0.9rem;">
+        Roll No: <strong style="color: white;">{{ student_record.roll_number }}</strong> &bull; 
+        {{ student_record.department }} &bull; {{ student_record.semester }}
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap;">
+      <div style="text-align: center; background: rgba(255,255,255,0.1); padding: 0.75rem 1.25rem; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.15);">
+        <div style="font-size: 0.75rem; text-transform: uppercase; color: #93c5fd; font-weight: 700;">Percentage</div>
+        <div style="font-size: 1.6rem; font-weight: 800; font-family: 'Outfit', sans-serif;">{{ student_record.percentage }}%</div>
+      </div>
+
+      <div style="text-align: center; background: rgba(255,255,255,0.1); padding: 0.75rem 1.25rem; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.15);">
+        <div style="font-size: 0.75rem; text-transform: uppercase; color: #93c5fd; font-weight: 700;">SGPA</div>
+        <div style="font-size: 1.6rem; font-weight: 800; font-family: 'Outfit', sans-serif;">{{ student_record.gpa }}</div>
+      </div>
+
+      <div style="text-align: center; background: rgba(255,255,255,0.1); padding: 0.75rem 1.25rem; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.15);">
+        <div style="font-size: 0.75rem; text-transform: uppercase; color: #93c5fd; font-weight: 700;">Grade</div>
+        <div style="font-size: 1.6rem; font-weight: 800; font-family: 'Outfit', sans-serif;">{{ student_record.grade }}</div>
+      </div>
+
+      <a href="{% url 'transcript' student_record.roll_number %}" class="btn btn-primary" style="background: white; color: #1e3a8a;">
+        <i class="fa-solid fa-file-invoice"></i> View My Marksheet
+      </a>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Institutional KPI Stats Cards -->
+<div class="stats-grid">
+  <div class="stat-card blue">
+    <div class="stat-icon blue"><i class="fa-solid fa-user-graduate"></i></div>
+    <div class="stat-info">
+      <h4>Total Evaluated</h4>
+      <div class="stat-value">{{ total_students }}</div>
+      <div class="stat-sub">Active semester cohort</div>
+    </div>
+  </div>
+
+  <div class="stat-card green">
+    <div class="stat-icon green"><i class="fa-solid fa-circle-check"></i></div>
+    <div class="stat-info">
+      <h4>Pass Rate</h4>
+      <div class="stat-value">{{ pass_rate }}%</div>
+      <div class="stat-sub">{{ pass_count }} Passed / {{ fail_count }} Arrears</div>
+    </div>
+  </div>
+
+  <div class="stat-card purple">
+    <div class="stat-icon purple"><i class="fa-solid fa-chart-line"></i></div>
+    <div class="stat-info">
+      <h4>Class Average</h4>
+      <div class="stat-value">{{ avg_score }}%</div>
+      <div class="stat-sub">Across all 5 subjects</div>
+    </div>
+  </div>
+
+  <div class="stat-card amber">
+    <div class="stat-icon amber"><i class="fa-solid fa-crown"></i></div>
+    <div class="stat-info">
+      <h4>Class Topper</h4>
+      <div class="stat-value" style="font-size: 1.3rem;">{{ topper.name|default:"N/A"|truncatechars:14 }}</div>
+      <div class="stat-sub">{{ topper.percentage }}% &bull; {{ topper.roll_number }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- Interactive Analytics Charts (Chart.js) -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
+  <!-- Grade Distribution Chart -->
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-main);">Grade Distribution</h3>
+      <span style="font-size: 0.8rem; color: var(--text-muted);">Cohort Breakdown</span>
+    </div>
+    <div style="position: relative; height: 260px;">
+      <canvas id="gradeDistributionChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Subject Average Scores Chart -->
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-main);">Subject Performance Benchmark</h3>
+      <span style="font-size: 0.8rem; color: var(--text-muted);">Mean Scores (/100)</span>
+    </div>
+    <div style="position: relative; height: 260px;">
+      <canvas id="subjectPerformanceChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Search, Filter & Student List Table -->
+<div class="card">
+  <!-- Filter & Search Toolbar -->
+  <form method="get" action="{% url 'dashboard' %}" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--border-light);">
+    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; flex: 1; min-width: 280px;">
+      <!-- Search Input -->
+      <div style="position: relative; min-width: 220px; flex: 1;">
+        <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.85rem;"></i>
+        <input 
+          type="text" 
+          name="search" 
+          value="{{ search_query }}" 
+          placeholder="Filter by name or roll number..." 
+          class="form-control"
+          style="padding-left: 2.2rem; font-size: 0.9rem;"
+        >
+      </div>
+
+      <!-- Department Filter -->
+      <select name="department" class="form-select" style="width: auto; min-width: 180px; font-size: 0.88rem;">
+        <option value="">All Departments</option>
+        {% for code, label in departments %}
+          <option value="{{ code }}" {% if selected_dept == code %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+
+      <!-- Semester Filter -->
+      <select name="semester" class="form-select" style="width: auto; min-width: 140px; font-size: 0.88rem;">
+        <option value="">All Semesters</option>
+        {% for code, label in semesters %}
+          <option value="{{ code }}" {% if selected_sem == code %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+
+      <!-- Status Filter -->
+      <select name="status" class="form-select" style="width: auto; min-width: 130px; font-size: 0.88rem;">
+        <option value="">All Statuses</option>
+        <option value="pass" {% if selected_status == 'pass' %}selected{% endif %}>Passed Only</option>
+        <option value="fail" {% if selected_status == 'fail' %}selected{% endif %}>Arrears / Fail</option>
+        <option value="distinction" {% if selected_status == 'distinction' %}selected{% endif %}>Distinction</option>
+      </select>
+    </div>
+
+    <div style="display: flex; gap: 0.5rem;">
+      <button type="submit" class="btn btn-secondary btn-sm">
+        <i class="fa-solid fa-filter"></i> Apply Filters
+      </button>
+      {% if search_query or selected_dept or selected_sem or selected_status %}
+        <a href="{% url 'dashboard' %}" class="btn btn-outline btn-sm" style="color: var(--text-muted); border-color: var(--border-light);">
+          Reset
+        </a>
+      {% endif %}
+    </div>
+  </form>
+
+  <!-- Students Data Table -->
+  <div class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Student Details</th>
+          <th>Department & Sem</th>
+          <th>Subject Scores (P / J / D / M / E)</th>
+          <th>Total</th>
+          <th>Percentage</th>
+          <th>SGPA</th>
+          <th>Grade</th>
+          <th>Status</th>
+          <th style="text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in students %}
+          <tr>
+            <td>
+              <div class="student-meta">
+                <div class="student-avatar">{{ s.name|slice:":1"|upper }}</div>
+                <div class="student-details">
+                  <h5>{{ s.name }}</h5>
+                  <span>Roll No: <strong>{{ s.roll_number }}</strong></span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div style="font-weight: 600; font-size: 0.88rem;">{{ s.department|truncatechars:24 }}</div>
+              <span style="font-size: 0.78rem; color: var(--text-muted);">{{ s.semester }}</span>
+            </td>
+            <td>
+              <div style="display: flex; gap: 4px; font-size: 0.78rem; font-weight: 700;">
+                <span title="Python" style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; color: {% if s.python_marks >= 35 %}#0f172a{% else %}#ef4444{% endif %};">{{ s.python_marks|floatformat:0 }}</span>
+                <span title="Java" style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; color: {% if s.java_marks >= 35 %}#0f172a{% else %}#ef4444{% endif %};">{{ s.java_marks|floatformat:0 }}</span>
+                <span title="DBMS" style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; color: {% if s.dbms_marks >= 35 %}#0f172a{% else %}#ef4444{% endif %};">{{ s.dbms_marks|floatformat:0 }}</span>
+                <span title="Maths" style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; color: {% if s.maths_marks >= 35 %}#0f172a{% else %}#ef4444{% endif %};">{{ s.maths_marks|floatformat:0 }}</span>
+                <span title="English" style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; color: {% if s.english_marks >= 35 %}#0f172a{% else %}#ef4444{% endif %};">{{ s.english_marks|floatformat:0 }}</span>
+              </div>
+            </td>
+            <td>
+              <strong>{{ s.total|floatformat:0 }}</strong><span style="font-size: 0.75rem; color: #94a3b8;">/500</span>
+            </td>
+            <td>
+              <strong>{{ s.percentage }}%</strong>
+            </td>
+            <td>
+              <span style="font-weight: 700; color: #2563eb;">{{ s.gpa }}</span>
+            </td>
+            <td>
+              <span class="grade-badge grade-{{ s.grade|slugify }}">{{ s.grade }}</span>
+            </td>
+            <td>
+              {% if s.is_passed %}
+                <span class="badge badge-pass"><i class="fa-solid fa-circle-check"></i> PASS</span>
+              {% else %}
+                <span class="badge badge-fail"><i class="fa-solid fa-circle-xmark"></i> FAIL</span>
+              {% endif %}
+            </td>
+            <td style="text-align: right; white-space: nowrap;">
+              <a href="{% url 'transcript' s.roll_number %}" class="btn btn-secondary btn-sm" title="View Official Marksheet">
+                <i class="fa-solid fa-file-invoice"></i> Marksheet
+              </a>
+              <a href="{% url 'student_edit' s.id %}" class="btn btn-secondary btn-sm" title="Edit Marks">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </a>
+              <form method="post" action="{% url 'student_delete' s.id %}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete result for {{ s.name }} ({{ s.roll_number }})?');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-secondary btn-sm" style="color: #ef4444;" title="Delete Record">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="9" style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
+              <i class="fa-solid fa-folder-open" style="font-size: 2.5rem; margin-bottom: 0.75rem; color: #cbd5e1; display: block;"></i>
+              No student result records found matching your query criteria.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Add Student Result Modal -->
+<div class="modal-overlay" id="addStudentModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div>
+        <h3 style="font-size: 1.35rem; font-weight: 800; color: var(--text-main);">Add New Student Result</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">Enter academic marks to generate instant grade calculation</p>
+      </div>
+      <button class="modal-close" onclick="closeModal('addStudentModal')">&times;</button>
+    </div>
+
+    <form method="post" action="{% url 'student_add' %}">
+      {% csrf_token %}
+      
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Student Full Name *</label>
+          <input type="text" name="name" class="form-control" placeholder="e.g. Rahul Sharma" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Roll Number *</label>
+          <input type="text" name="roll_number" class="form-control" placeholder="e.g. 2024CS05" required>
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Department *</label>
+          <select name="department" class="form-select">
+            {% for code, label in departments %}
+              <option value="{{ code }}">{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Semester *</label>
+          <select name="semester" class="form-select">
+            {% for code, label in semesters %}
+              <option value="{{ code }}">{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin: 1rem 0 0.75rem; border-bottom: 1px solid var(--border-light); padding-bottom: 0.4rem;">
+        Subject Marks Entry (Out of 100)
+      </h4>
+
+      <div class="form-grid-3">
+        <div class="form-group">
+          <label class="form-label">Python (CS401)</label>
+          <input type="number" step="0.5" min="0" max="100" name="python_marks" class="form-control mark-input" placeholder="0-100" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Java (CS402)</label>
+          <input type="number" step="0.5" min="0" max="100" name="java_marks" class="form-control mark-input" placeholder="0-100" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">DBMS (CS403)</label>
+          <input type="number" step="0.5" min="0" max="100" name="dbms_marks" class="form-control mark-input" placeholder="0-100" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Maths (MA404)</label>
+          <input type="number" step="0.5" min="0" max="100" name="maths_marks" class="form-control mark-input" placeholder="0-100" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">English (HS405)</label>
+          <input type="number" step="0.5" min="0" max="100" name="english_marks" class="form-control mark-input" placeholder="0-100" required>
+        </div>
+      </div>
+
+      <!-- Live Calculation Box -->
+      <div style="background: #f8fafc; border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 1rem; margin: 1rem 0 1.5rem; display: flex; justify-content: space-around; align-items: center; text-align: center;">
+        <div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">TOTAL</div>
+          <div style="font-size: 1.25rem; font-weight: 800; font-family: 'Outfit';" id="calcTotal">0</div>
+        </div>
+        <div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">PERCENTAGE</div>
+          <div style="font-size: 1.25rem; font-weight: 800; font-family: 'Outfit';" id="calcPercent">0%</div>
+        </div>
+        <div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">GRADE</div>
+          <div style="font-size: 1.25rem; font-weight: 800; font-family: 'Outfit';" id="calcGrade">-</div>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('addStudentModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Student Result</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  // Grade Distribution Bar Chart
+  const gradeCtx = document.getElementById('gradeDistributionChart').getContext('2d');
+  const gradeLabels = {{ grade_chart_labels|safe }};
+  const gradeData = {{ grade_chart_data|safe }};
+
+  new Chart(gradeCtx, {
+    type: 'bar',
+    data: {
+      labels: gradeLabels,
+      datasets: [{
+        label: 'Students Count',
+        data: gradeData,
+        backgroundColor: [
+          '#10b981', // A+
+          '#3b82f6', // A
+          '#6366f1', // B+
+          '#8b5cf6', // B
+          '#f59e0b', // C
+          '#f97316', // D
+          '#ef4444'  // F
+        ],
+        borderRadius: 8,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { stepSize: 1, color: '#64748b' },
+          grid: { color: '#f1f5f9' }
+        },
+        x: {
+          ticks: { color: '#64748b' },
+          grid: { display: false }
+        }
+      }
+    }
+  });
+
+  // Subject Performance Radar/Bar Chart
+  const subjectCtx = document.getElementById('subjectPerformanceChart').getContext('2d');
+  const subjectLabels = {{ subject_chart_labels|safe }};
+  const subjectData = {{ subject_chart_data|safe }};
+
+  new Chart(subjectCtx, {
+    type: 'line',
+    data: {
+      labels: subjectLabels,
+      datasets: [{
+        label: 'Class Average Marks',
+        data: subjectData,
+        borderColor: '#2563eb',
+        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+        fill: true,
+        tension: 0.35,
+        pointBackgroundColor: '#2563eb',
+        pointRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        y: {
+          min: 0,
+          max: 100,
+          ticks: { stepSize: 20, color: '#64748b' },
+          grid: { color: '#f1f5f9' }
+        },
+        x: {
+          ticks: { color: '#64748b' },
+          grid: { display: false }
+        }
+      }
+    }
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}EduMatrix | Student Result Management System{% endblock %}</title>
+  <meta name="description" content="State-of-the-art institutional student result management, academic transcript generator, and performance analytics system.">
+  
+  <!-- Modern Typography (Plus Jakarta Sans & Outfit) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Phosphor Icons & Chart.js -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Static Stylesheet -->
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="nav-container">
+      <a href="{% url 'home' %}" class="brand-logo" id="brand-logo-link">
+        <div class="brand-badge">
+          <i class="fa-solid fa-graduation-cap"></i>
+        </div>
+        <div class="brand-text">Edu<span>Matrix</span></div>
+      </a>
+
+      <!-- Quick Roll Number Search Bar in Header -->
+      <div style="position:relative; flex: 1; max-width: 320px; display: none;" class="desktop-search">
+        <div style="position:relative;">
+          <i class="fa-solid fa-magnifying-glass" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:0.85rem;"></i>
+          <input 
+            type="text" 
+            id="quickSearchInput"
+            placeholder="Search Roll No or Name..." 
+            style="width:100%; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:9999px; padding:0.45rem 1rem 0.45rem 2.2rem; color:#fff; font-size:0.85rem;"
+          >
+        </div>
+        <div id="quickSearchResults" style="display:none; position:absolute; top:110%; left:0; right:0; background:#fff; border-radius:12px; box-shadow:0 10px 25px rgba(0,0,0,0.15); border:1px solid #e2e8f0; z-index:1050; max-height:280px; overflow-y:auto;"></div>
+      </div>
+
+      <nav>
+        <ul class="nav-links" id="navLinks">
+          <li>
+            <a href="{% url 'home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" id="nav-home">
+              <i class="fa-solid fa-house"></i> Home
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" id="nav-dashboard">
+              <i class="fa-solid fa-chart-pie"></i> Dashboard
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'history' %}" class="nav-link {% if request.resolver_match.url_name == 'history' %}active{% endif %}" id="nav-history">
+              <i class="fa-solid fa-clock-rotate-left"></i> History
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'leaderboard' %}" class="nav-link {% if request.resolver_match.url_name == 'leaderboard' %}active{% endif %}" id="nav-leaderboard">
+              <i class="fa-solid fa-trophy"></i> Leaderboard
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'calculator' %}" class="nav-link {% if request.resolver_match.url_name == 'calculator' %}active{% endif %}" id="nav-calculator">
+              <i class="fa-solid fa-calculator"></i> GPA Calc
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'notices' %}" class="nav-link {% if request.resolver_match.url_name == 'notices' %}active{% endif %}" id="nav-notices">
+              <i class="fa-solid fa-bullhorn"></i> Notices
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        {% if user.is_authenticated %}
+          <div class="user-pill">
+            <div class="user-avatar-sm">{{ user.username|slice:":1"|upper }}</div>
+            <span>{{ user.first_name|default:user.username }}</span>
+            {% if current_profile %}
+              <span class="role-tag {{ current_profile.role }}">{{ current_profile.role }}</span>
+            {% endif %}
+          </div>
+          <a href="{% url 'logout' %}" class="btn btn-outline btn-sm" id="nav-logout" title="Logout">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          </a>
+        {% else %}
+          <a href="{% url 'login' %}" class="btn btn-outline btn-sm" id="nav-login">
+            <i class="fa-solid fa-right-to-bracket"></i> Login
+          </a>
+          <a href="{% url 'signup' %}" class="btn btn-primary btn-sm" id="nav-signup">
+            <i class="fa-solid fa-user-plus"></i> Signup
+          </a>
+        {% endif %}
+
+        <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Flash Messages -->
+  {% if messages %}
+    <div class="flash-messages">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            {% if message.tags == 'success' %}
+              <i class="fa-solid fa-circle-check"></i>
+            {% elif message.tags == 'error' %}
+              <i class="fa-solid fa-circle-exclamation"></i>
+            {% else %}
+              <i class="fa-solid fa-circle-info"></i>
+            {% endif %}
+            <span>{{ message }}</span>
+          </div>
+          <button class="alert-close" onclick="this.parentElement.remove()">&times;</button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- Main Content Body -->
+  <main class="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Institutional Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-brand">
+        <h3>
+          <i class="fa-solid fa-graduation-cap" style="color:#60a5fa;"></i>
+          Apex Institute of Technology
+        </h3>
+        <p style="font-size:0.88rem; line-height:1.6; margin-bottom:1rem;">
+          Autonomous Institutional Examination Cell & Academic Registry. Providing automated student evaluation, digital transcript verification, and real-time scholastic performance monitoring.
+        </p>
+        <div style="display:flex; gap:0.75rem; font-size:1.1rem; color:#94a3b8;">
+          <a href="#" style="color:inherit;"><i class="fa-brands fa-github"></i></a>
+          <a href="#" style="color:inherit;"><i class="fa-brands fa-linkedin"></i></a>
+          <a href="#" style="color:inherit;"><i class="fa-brands fa-twitter"></i></a>
+        </div>
+      </div>
+
+      <div class="footer-links">
+        <h4>Portals</h4>
+        <ul>
+          <li><a href="{% url 'home' %}">Home & Search</a></li>
+          <li><a href="{% url 'dashboard' %}">Performance Dashboard</a></li>
+          <li><a href="{% url 'history' %}">Academic Archives</a></li>
+          <li><a href="{% url 'leaderboard' %}">Merit Honor Roll</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-links">
+        <h4>Student Services</h4>
+        <ul>
+          <li><a href="{% url 'calculator' %}">CGPA & GPA Calculator</a></li>
+          <li><a href="{% url 'reevaluation' %}">Paper Re-evaluation</a></li>
+          <li><a href="{% url 'notices' %}">Exam Circulars</a></li>
+          <li><a href="{% url 'login' %}">Student Authentication</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-links">
+        <h4>Examination Cell</h4>
+        <p style="font-size:0.85rem; line-height:1.6; margin-bottom:0.5rem;">
+          <i class="fa-solid fa-location-dot" style="color:#60a5fa; margin-right:6px;"></i> Admin Block, Apex University Campus
+        </p>
+        <p style="font-size:0.85rem; line-height:1.6; margin-bottom:0.5rem;">
+          <i class="fa-solid fa-envelope" style="color:#60a5fa; margin-right:6px;"></i> examcell@apexuniv.edu
+        </p>
+        <p style="font-size:0.85rem; line-height:1.6;">
+          <i class="fa-solid fa-phone" style="color:#60a5fa; margin-right:6px;"></i> +91 (080) 4567-8900
+        </p>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div>&copy; 2026 Apex Institute & EduMatrix Result Management System. All Rights Reserved.</div>
+      <div style="display:flex; gap:1.5rem;">
+        <a href="#" style="color:#94a3b8; text-decoration:none;">Grading Regulations</a>
+        <a href="#" style="color:#94a3b8; text-decoration:none;">Privacy Policy</a>
+        <a href="#" style="color:#94a3b8; text-decoration:none;">Terms of Examination</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="{% static 'js/main.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>
